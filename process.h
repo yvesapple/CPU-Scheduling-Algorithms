@@ -16,7 +16,7 @@ typedef struct
     uint8_t priority;
     uint8_t burst;
     uint8_t remaining;
-    uint32_t start;
+    int32_t start;
     uint32_t finish;
     uint32_t wait;
     status_t status;
@@ -42,6 +42,7 @@ void createQueue (queue_t * q);
 int addToQueue (queue_t * q, const void * data, size_t dataSize);
 int removeFromQueue (queue_t * q, void * dst, size_t sizeDst);
 void clearQueue (queue_t * q);
+int isQueueEmpty(const queue_t * q);
 
 // List
 void createList (list_t * pl);

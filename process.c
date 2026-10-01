@@ -16,8 +16,10 @@ int createProcess (queue_t * q, uint8_t PID, char name, uint8_t arrival)
     newP.PName = name;
     newP.arrival = arrival;
     newP.priority = rand() % MAX_PRIORITY;
-    newP.burst = rand() % MAX_QUANTUM;
+    newP.burst = 1 + rand() % MAX_QUANTUM;
     newP.remaining = newP.burst;
+    newP.start = -1;
+    newP.wait = 0;
 
     printf("Process %c arrived with priority: %d and PID: %d\n", name, newP.priority, PID);
     addToQueue(q, &newP, sizeof(PCB_t));
@@ -95,6 +97,11 @@ int removeFromQueue (queue_t * q, void * dst, size_t sizeDst)
     return 1;
 }
 
+int isQueueEmpty(const queue_t * q)
+{
+    return q->first == NULL;
+}
+
 void createList (list_t * pl)
 {
     *pl = NULL;
@@ -155,7 +162,7 @@ void mapList (list_t * pl, void (*f)(void*))
 void printPCB (void * process)
 {
     PCB_t * p = (PCB_t*)process;
-    printf("   %c\t|%5hu \t  |%4hhu\t     |%4hhu   |%4hu   |%4hu    |%4hu\n",
+    printf("   %c\t|%5hu \t  |%4hhu\t     |%4hhu   |%4d   |%4hu    |%4hu\n",
            p->PName, p->arrival, p->priority, p->burst, p->start, p->finish, p->wait);
 }
 

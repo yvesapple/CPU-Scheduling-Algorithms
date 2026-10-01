@@ -3,8 +3,9 @@
 
 void showMenu ()
 {
-    printf(BOLD BLUE "=== Scheduling Algorithm ===\n" RESET);
-    printf(BLUE "\t1. FCFS\n" RESET);
+    printf(BOLD BLUE "=== Scheduling Algorithms ===\n" RESET);
+    printf(BLUE "\t1. FCFS\n");
+    printf("\t2. Round Robin\n" RESET);
     puts("");
 
     printf(BLUE "==> ");
@@ -24,5 +25,6 @@ int getInt (int li, int ls)
         scanf("%d", &value);
     }
 
+    puts("");
     return value;
 }
