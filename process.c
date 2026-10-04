@@ -2,13 +2,7 @@
 #include <string.h>
 #include "process.h"
 
-void createQueue (queue_t * q)
-{
-    q->first = NULL;
-    q->last = NULL;
-}
-
-int createProcess (queue_t * q, uint8_t PID, char name, uint8_t arrival)
+int createProcess (list_t * q, uint8_t PID, char name, uint8_t arrival)
 {
     PCB_t newP;
 
@@ -21,43 +15,8 @@ int createProcess (queue_t * q, uint8_t PID, char name, uint8_t arrival)
     newP.start = -1;
     newP.wait = 0;
 
-    printf("Process %c arrived with priority: %d and PID: %d\n", name, newP.priority, PID);
-    addToQueue(q, &newP, sizeof(PCB_t));
-
-    return 1;
-}
-
-int addToQueue (queue_t * q, const void * data, size_t dataSize)
-{
-    node_t * newNode = malloc(sizeof(node_t));
-    if(!newNode)
-    {
-        fprintf(stderr, "Out of memory\n");
-        return 0;
-    }
-
-    newNode->data = malloc(dataSize);
-    if(!newNode->data)
-    {
-        free(newNode);
-        fprintf(stderr, "Out of memory\n");
-        return 0;
-    }
-
-    memcpy(newNode->data, data, dataSize);
-    newNode->dataSize = dataSize;
-    newNode->next = NULL;
-
-    if(!q->first)
-    {
-        q->first = newNode;
-    }
-    else
-    {
-        q->last->next = newNode;
-    }
-
-    q->last = newNode;
+    printf("Process %c arrived with Priority: %d PID: %d Burst: %d\n", name, newP.priority, PID, newP.burst);
+    appendToList(q, &newP, sizeof(PCB_t));
 
     return 1;
 }
@@ -65,41 +24,6 @@ int addToQueue (queue_t * q, const void * data, size_t dataSize)
 void freeProcess (PCB_t * p)
 {
     free(p);
-}
-
-void clearQueue (queue_t * q)
-{
-    while(q->first)
-    {
-        node_t * aux = q->first;
-        q->first = aux->next;
-        free(aux->data);
-        free(aux);
-    }
-
-    q->last = NULL;
-}
-
-int removeFromQueue (queue_t * q, void * dst, size_t sizeDst)
-{
-    if(!q->first)
-    {
-        return 0;
-    }
-    node_t * aux = q->first;
-
-    q->first = q->first->next;
-
-    memcpy(dst, aux->data, MIN(sizeDst, aux->dataSize));
-    free(aux->data);
-    free(aux);
-
-    return 1;
-}
-
-int isQueueEmpty(const queue_t * q)
-{
-    return q->first == NULL;
 }
 
 void createList (list_t * pl)
@@ -137,6 +61,29 @@ int appendToList (list_t * pl, const void * data, size_t dataSize)
     return 1;
 }
 
+int getFirstList (list_t * pl, void * dst, size_t dstSize)
+{
+    if(!*pl)
+    {
+        return 0;
+    }
+
+    memcpy(dst, (*pl)->data, MIN((*pl)->dataSize, dstSize));
+
+    node_t * aux = (*pl);
+    *pl = (*pl)->next;
+
+    free(aux->data);
+    free(aux);
+
+    return 1;
+}
+
+int isListEmpty (const list_t * pl)
+{
+    return *pl == NULL;
+}
+
 void clearList (list_t * pl)
 {
     while(*pl)
@@ -159,6 +106,47 @@ void mapList (list_t * pl, void (*f)(void*))
     }
 }
 
+int getMinList (list_t * pl, void * dst, size_t dstSize, int(*cmp)(const void*, const void*))
+{
+    if(!*pl)
+    {
+        return 0;
+    }
+
+    node_t * prev = NULL;
+    node_t * curr = *pl;
+    node_t * minPrev = NULL;
+    node_t * min = *pl;
+
+    while(curr)
+    {
+        if(cmp(curr->data, min->data) < 0)
+        {
+            min = curr;
+            minPrev = prev;
+        }
+
+        prev = curr;
+        curr = curr->next;
+    }
+
+    memcpy(dst, min->data, MIN(min->dataSize, dstSize));
+
+    if(!minPrev)
+    {
+        *pl = min->next;    // first is the min
+    }
+    else
+    {
+        minPrev->next = min->next;
+    }
+
+    free(min->data);
+    free(min);
+
+    return 1;
+}
+
 void printPCB (void * process)
 {
     PCB_t * p = (PCB_t*)process;
@@ -171,4 +159,17 @@ void showStats (const list_t * l, uint8_t numProcess)
     puts("");
     printf("Process | Arrival | Priority | Burst | Start | Finish | Wait\n");
     mapList((list_t*)l, printPCB);
+}
+
+int cmpBurst (const void * s1, const void * s2)
+{
+    const PCB_t * p1 = (const PCB_t*)s1;
+    const PCB_t * p2 = (const PCB_t*)s2;
+
+    if(p1->burst == p2->arrival)
+    {
+        return p1->arrival - p2->arrival;
+    }
+
+    return p1->burst - p2->burst;
 }

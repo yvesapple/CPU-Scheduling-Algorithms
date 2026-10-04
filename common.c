@@ -5,12 +5,12 @@ void showMenu ()
 {
     printf(BOLD BLUE "=== Scheduling Algorithms ===\n" RESET);
     printf(BLUE "\t1. FCFS\n");
-    printf("\t2. Round Robin\n" RESET);
+    printf("\t2. Round Robin\n");
+    printf("\t3. SPN\n" RESET);
     puts("");
 
     printf(BLUE "==> ");
-    printf("Select an option (1 - 9)\n");
-    printf(BLUE "==> " RESET);
+    printf("Select an option (1 - 9): " RESET);
 }
 
 int getInt (int li, int ls)
