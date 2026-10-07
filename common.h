@@ -15,7 +15,7 @@
 #define BOLD "\033[1m"
 #define RESET "\033[0m"
 
-typedef enum {E_SUCCESS, E_NOMEM} error_codes;
+typedef enum {E_SUCCESS, E_NOMEM, E_ARG} error_codes;
 
 int getInt (int li, int ls);
 void showMenu ();
