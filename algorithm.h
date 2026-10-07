@@ -6,10 +6,10 @@
 #define PREEMPTIVE 1
 #define NON_PREEMPTIVE 0
 
-typedef enum {A_FCFS = 1, A_ROUNDROBIN = 2, A_SPN = 3, A_PSPN = 4, A_HPRN = 5} algorith_options;
+typedef enum {ALG_FCFS = 1, ALG_ROUNDROBIN = 2, ALG_SPN = 3, ALG_PSPN = 4, ALG_HPRN = 5} algorith_options;
 
-int processAlgorithms ();
-int simulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, void*, size_t));
+int selectAlgorithm ();
+int runSimulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, void*, size_t));
 
 int roundRobin (list_t * pl, void * dst, size_t dstSize);
 int shortestProcessNext (list_t * pl, void * dst, size_t dstSize);

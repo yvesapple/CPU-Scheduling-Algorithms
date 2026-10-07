@@ -3,7 +3,7 @@
 
 #define MIN(X, Y) (X < Y) ? (X) : (Y)
 
-#define NUM_OPTIONS 9
+#define NUM_ALGORITHMS 5
 
 #define MAX_QUANTUM 256
 #define MAX_PRIORITY 10

@@ -3,7 +3,7 @@
 #include "common.h"
 #include "list.h"
 
-void createList (list_t * pl)
+void initList (list_t * pl)
 {
     *pl = NULL;
 }
@@ -38,7 +38,7 @@ int appendToList (list_t * pl, const void * data, size_t dataSize)
     return 1;
 }
 
-int getFirstList (list_t * pl, void * dst, size_t dstSize)
+int popFrontList (list_t * pl, void * dst, size_t dstSize)
 {
     if(!*pl)
     {
@@ -56,7 +56,7 @@ int getFirstList (list_t * pl, void * dst, size_t dstSize)
     return 1;
 }
 
-int isListEmpty (const list_t * pl)
+int isEmptyList (const list_t * pl)
 {
     return *pl == NULL;
 }
@@ -83,7 +83,7 @@ void mapList (list_t * pl, const void * param, void (*f)(void*, const void*))
     }
 }
 
-int getMinList (list_t * pl, void * dst, size_t dstSize, int(*cmp)(const void*, const void*))
+int removeMinList (list_t * pl, void * dst, size_t dstSize, int(*cmp)(const void*, const void*))
 {
     if(!*pl)
     {

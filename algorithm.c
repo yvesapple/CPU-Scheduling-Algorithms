@@ -2,7 +2,7 @@
 #include <string.h>
 #include "algorithm.h"
 
-int processAlgorithms ()
+int selectAlgorithm ()
 {
     uint8_t option = 0;
     uint8_t numProcess = 0;
@@ -10,39 +10,45 @@ int processAlgorithms ()
 
     showMenu();
 
-    option = getInt(1, NUM_OPTIONS);
+    option = getInt(1, NUM_ALGORITHMS);
 
     printf(BLUE "==> Number of processes (1 - 27): " RESET);
     numProcess = getInt(MIN_PROCESSES, MAX_PROCESSES);
 
     switch(option)
     {
-    case A_FCFS:
-        result = simulation(numProcess, NON_PREEMPTIVE, getFirstList);
+    case ALG_FCFS:
+        printf(BLUE "\nFirst Come, First Serve\n" RESET);
+        result = runSimulation(numProcess, NON_PREEMPTIVE, popFrontList);
         break;
-    case A_ROUNDROBIN:
-        result = simulation(numProcess, PREEMPTIVE, roundRobin);
+    case ALG_ROUNDROBIN:
+        printf(BLUE "\nRound Robin\n" RESET);
+        result = runSimulation(numProcess, PREEMPTIVE, roundRobin);
         break;
-    case A_SPN:
-        result = simulation(numProcess, NON_PREEMPTIVE, shortestProcessNext);
+    case ALG_SPN:
+        printf(BLUE "\nShortest Process Next\n" RESET);
+        result = runSimulation(numProcess, NON_PREEMPTIVE, shortestProcessNext);
         break;
-    case A_PSPN:    // Preemptive Shortess Process Next
-        result = simulation(numProcess, PREEMPTIVE, shortestProcessNext);
+    case ALG_PSPN:
+        printf(BLUE "\nPreemptive Shortess Process Next\n" RESET);
+        result = runSimulation(numProcess, PREEMPTIVE, shortestProcessNext);
         break;
-    case A_HPRN:     // Highest Penalty Ratio Next
+    case ALG_HPRN:
+        printf(BLUE "\nHighest Penalty Ratio Next\n" RESET);
         result = highestPenaltyRatio(numProcess);
+        break;
     }
 
     return result;
 }
 
-int simulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, void*, size_t))
+int runSimulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, void*, size_t))
 {
     list_t readyQueue;
     list_t finishedList;
 
-    createList(&readyQueue);
-    createList(&finishedList);
+    initList(&readyQueue);
+    initList(&finishedList);
 
     uint8_t i = 0;
     uint32_t simTime = 0;
@@ -54,7 +60,7 @@ int simulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, v
         quantum = getInt(1, MAX_QUANTUM);
     }
 
-    uint8_t quantumLeft = quantum;
+    uint8_t remainingQuantum = quantum;
     char processName = 'A';
 
     if(!createProcess(&readyQueue, i, processName, simTime))
@@ -67,32 +73,32 @@ int simulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, v
 
     PCB_t running;
     PCB_t preempted;
-    getFirstList(&readyQueue, &running, sizeof(PCB_t));
-    running.start = simTime;
+    popFrontList(&readyQueue, &running, sizeof(PCB_t));
+    running.startTime = simTime;
     running.status = RUNNING;
-    printf("Running process %c\n", running.PName);
+    printf("Running process %c\n", running.name);
 
     while(running.status != FINISHED)
     {
         simTime++;
 
-        if(preemptive && !isListEmpty(&readyQueue) && quantumLeft == 0)
+        if(preemptive && !isEmptyList(&readyQueue) && remainingQuantum == 0)
         {
             running.status = READY;
-            printf("Preempting process %c (%hhu remaining)\n", running.PName, running.remaining);
+            printf("Preempting process %c (%hhu remaining)\n", running.name, running.remainingTime);
             preempted = running;
 
             dispatcher(&readyQueue, &running, sizeof(PCB_t));
-            printf("Now running process %c\n", running.PName);
+            printf("Now running process %c\n", running.name);
 
             appendToList(&readyQueue, &preempted, sizeof(PCB_t));
 
-            if(running.start == -1)
+            if(running.startTime == -1)
             {
-                running.start = simTime;
+                running.startTime = simTime;
             }
 
-            quantumLeft = quantum;
+            remainingQuantum = quantum;
         }
 
         if(i < numProcess && ((rand() % 5) == 0))
@@ -108,34 +114,34 @@ int simulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, v
             processName++;
         }
 
-        else if(running.remaining)
+        else if(running.remainingTime)
         {
-            running.remaining--;
-            quantumLeft--;
+            running.remainingTime--;
+            remainingQuantum--;
         }
 
-        else if(!running.remaining)
+        else if(!running.remainingTime)
         {
             running.status = FINISHED;
-            running.finish = simTime;
-            running.wait = running.finish - running.arrival - running.burst;
+            running.finishTime = simTime;
+            running.waitTime = running.finishTime - running.arrivalTime - running.burstTime;
             appendToList(&finishedList, &running, sizeof(PCB_t));
-            printf("Process %c finished\n", running.PName);
+            printf("Process %c finished\n", running.name);
 
-            quantumLeft = quantum;
+            remainingQuantum = quantum;
 
             if(dispatcher(&readyQueue, &running, sizeof(PCB_t)))
             {
-                printf("Now running process %c\n", running.PName);
+                printf("Now running process %c\n", running.name);
 
-                if(running.start == -1)
+                if(running.startTime == -1)
                 {
-                    running.start = simTime;
+                    running.startTime = simTime;
                 }
 
-                if(preemptive && isListEmpty(&readyQueue))
+                if(preemptive && isEmptyList(&readyQueue))
                 {
-                    printf("Process %c is the only available, skipping the quantum\n", running.PName);
+                    printf("Process %c is the only available, skipping the quantum\n", running.name);
                 }
             }
         }
@@ -150,12 +156,12 @@ int simulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*, v
 
 int roundRobin (list_t * pl, void * dst, size_t dstSize)
 {
-    return getFirstList(pl, dst, dstSize);
+    return popFrontList(pl, dst, dstSize);
 }
 
 int shortestProcessNext (list_t * pl, void * dst, size_t dstSize)
 {
-    return getMinList(pl, dst, dstSize, cmpBurst);
+    return removeMinList(pl, dst, dstSize, cmpBurst);
 }
 
 int highestPenaltyRatio (uint8_t numProcess)
@@ -163,8 +169,8 @@ int highestPenaltyRatio (uint8_t numProcess)
     list_t readyQueue;
     list_t finishedList;
 
-    createList(&readyQueue);
-    createList(&finishedList);
+    initList(&readyQueue);
+    initList(&finishedList);
 
     uint8_t i = 0;
     uint32_t simTime = 0;
@@ -180,10 +186,10 @@ int highestPenaltyRatio (uint8_t numProcess)
     processName++;
 
     PCB_t running;
-    getFirstList(&readyQueue, &running, sizeof(PCB_t));
-    running.start = simTime;
+    popFrontList(&readyQueue, &running, sizeof(PCB_t));
+    running.startTime = simTime;
     running.status = RUNNING;
-    printf("Running process %c\n", running.PName);
+    printf("Running process %c\n", running.name);
 
     while(running.status != FINISHED)
     {
@@ -202,26 +208,26 @@ int highestPenaltyRatio (uint8_t numProcess)
             processName++;
         }
 
-        else if(running.remaining)
+        else if(running.remainingTime)
         {
-            running.remaining--;
+            running.remainingTime--;
         }
 
         else
         {
             running.status = FINISHED;
-            running.finish = simTime;
+            running.finishTime = simTime;
             appendToList(&finishedList, &running, sizeof(PCB_t));
-            printf("Process %c finished\n", running.PName);
+            printf("Process %c finished\n", running.name);
 
             mapList(&readyQueue, &simTime, recalculatePenalty);
 
-            if(getMinList(&readyQueue, &running, sizeof(PCB_t), cmpPenalty))
+            if(removeMinList(&readyQueue, &running, sizeof(PCB_t), cmpPenalty))
             {
-                printf("Now running process %c\n", running.PName);
-                if(running.start == -1)
+                printf("Now running process %c\n", running.name);
+                if(running.startTime == -1)
                 {
-                    running.start = simTime;
+                    running.startTime = simTime;
                 }
             }
         }

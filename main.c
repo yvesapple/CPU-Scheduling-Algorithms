@@ -4,7 +4,7 @@
 int main()
 {
     srand(time(NULL));
-    processAlgorithms();
+    selectAlgorithm();
 
     return 0;
 }

@@ -13,7 +13,7 @@ void showMenu ()
     printf(RESET "\n");
 
     printf(BLUE "==> ");
-    printf("Select an option (1 - 9): " RESET);
+    printf("Select an option (1 - %d): " RESET, NUM_ALGORITHMS);
 }
 
 int getInt (int li, int ls)

@@ -9,20 +9,20 @@ typedef enum {NEW, READY, RUNNING, FINISHED} status_t;
 
 typedef struct
 {
-    uint8_t PID;
-    char PName;
-    uint32_t arrival;
+    uint8_t pid;
+    char name;
+    uint32_t arrivalTime;
     uint8_t priority;
-    uint8_t burst;
-    uint8_t remaining;
-    int32_t start;
-    uint32_t finish;
-    uint32_t wait;
-    uint8_t penalty;
+    uint8_t burstTime;
+    uint8_t remainingTime;
+    int32_t startTime;
+    uint32_t finishTime;
+    uint32_t waitTime;
+    double penaltyRatio;
     status_t status;
 } PCB_t;
 
-int createProcess (list_t * q, uint8_t PID, char name, uint8_t arrival);
+int createProcess (list_t * q, uint8_t pid, char name, uint8_t arrival);
 void freeProcess (PCB_t * p);
 
 void recalculatePenalty (void * process, const void * simTime);
