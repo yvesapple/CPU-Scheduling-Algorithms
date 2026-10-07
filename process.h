@@ -28,7 +28,7 @@ void freeProcess (PCB_t * p);
 void recalculatePenalty (void * process, const void * simTime);
 
 void printPCB (void * process, const void * param);
-void showStats (const list_t * l, uint8_t numProcess);
+void showStats (const list_t * l);
 
 int cmpBurst (const void * s1, const void * s2);
 int cmpPenalty (const void * s1, const void * s2);

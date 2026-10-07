@@ -29,12 +29,13 @@ void freeProcess (PCB_t * p)
 
 void printPCB (void * process, const void * param)
 {
+    (void)param;
     PCB_t * p = (PCB_t*)process;
     printf("   %c\t|%5hu \t  |%4hhu\t     |%4hhu   |%4d   |%4hu    |%4hu\n",
            p->name, p->arrivalTime, p->priority, p->burstTime, p->startTime, p->finishTime, p->waitTime);
 }
 
-void showStats (const list_t * l, uint8_t numProcess)
+void showStats (const list_t * l)
 {
     puts("");
     printf("Process | Arrival | Priority | Burst | Start | Finish | Wait\n");

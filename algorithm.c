@@ -148,7 +148,7 @@ int runSimulation (uint8_t numProcess, int preemptive, int (*dispatcher)(list_t*
     }
 
     clearList(&readyQueue);
-    showStats(&finishedList, numProcess);
+    showStats(&finishedList);
     clearList(&finishedList);
 
     return E_SUCCESS;
@@ -234,7 +234,7 @@ int highestPenaltyRatio (uint8_t numProcess)
     }
 
     clearList(&readyQueue);
-    showStats(&finishedList, numProcess);
+    showStats(&finishedList);
     clearList(&finishedList);
 
     return E_SUCCESS;
